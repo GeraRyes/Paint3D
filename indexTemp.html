@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint 3D</title>
+</head>
+
+<body>
+    
+    <script>
+        import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three/examples/jsm/controls/OrbitControls.js';
+        import Stats from "https://unpkg.com/three/examples/jsm/libs/stats.module.js";
+        import dat from "https://unpkg.com/three/examples/jsm/libs/dat.gui.module.js";
+
+        function init() {
+            // RENDERER ENGINE
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            //renderer.setClearColor(new THREE.Color(1, 1, 1,));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // SCENE
+            scene = new THREE.Scene();
+
+            // CAMERA
+            let fov = 60;
+            let aspect = window.innerWidth / window.innerHeight;
+            let near = 0.1;
+            let far = 10000;
+            camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            camera.position.set(0, 0, 3);
+            cameraControls = new OrbitControls(camera, renderer.domElement);
+
+            // Inicialización de un modelo predeterminado
+            var selected;
+            var meshArr = [];
+            let geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+                let material = new THREE.MeshBasicMaterial({color: "red", wireframe: false});
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.name = "Cube";
+                scene.add(mesh);
+                meshArr.push(mesh);
+                selected= mesh;
+
+
+
+            let gui = new dat.GUI();
+
+            //Esta parte son los controles
+            var guiControls = new function() {
+                this.color = mesh.material.color.getStyle();
+                this.rotationX = mesh.rotation.x;
+                this.rotationY = mesh.rotation.x;
+                this.positionX = mesh.position.x;
+                this.positionY = mesh.position.y;
+                this.positionZ = mesh.position.z;
+                this.wireframe = mesh.material.wireframe;
+            };
+
+
+            gui.addColor(guiControls, "color").listen().onChange(function(e) {
+            selected.material.color.setStyle(e);
+            });;
+
+            gui.add(guiControls, "rotationX", -3, 3).listen().onChange(function(e) {
+            selected.rotation.x = e;
+            });;
+
+            gui.add(guiControls, "rotationY", -3, 3).listen().onChange(function(e) {
+                selected.rotation.y = e;
+            });;
+
+            gui.add(guiControls, "positionX", -3, 3).listen().onChange(function(e) {
+                selected.position.x = e;
+            });;
+            gui.add(guiControls, "positionY", -3, 3).listen().onChange(function(e) {
+                selected.position.y = e;
+            });;
+            gui.add(guiControls, "positionZ", -3, 3).listen().onChange(function(e) {
+                selected.position.z = e;
+            });;
+            gui.add(guiControls, "wireframe").listen().onChange(function(e) {
+                selected.material.wireframe = e;
+            });;
+
+
+
+            //Con esto se crea un cubo
+            let creationMenu = gui.addFolder("Creation Menu");
+            var obj = { add:function(){
+                let geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+                let material = new THREE.MeshBasicMaterial({color: "red", wireframe: false});
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.name = "Cube";
+                scene.add(mesh);
+                meshArr.push(mesh);
+                selected= mesh;
+            }};
+            let cubeCreation = creationMenu.add(obj, "add");
+
+            //Esto controla la selección con un click
+            var intersects = [];
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
+            renderer.domElement.addEventListener("click", onClick)
+            function onClick(event) {
+                mouse.x = event.clientX / window.innerWidth * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                intersects = raycaster.intersectObjects(meshArr);
+                if (intersects.length > 0) {
+                selected = intersects[0].object;
+                guiControls.color = selected.material.color.getStyle();
+                }
+            }
+
+
+            gui.close()
+
+
+            stats = new Stats();
+            stats.showPanel(0);
+            document.body.appendChild(stats.dom);
+
+
+            renderLoop();
+        }   
+
+        function renderLoop() {
+            stats.begin();
+            renderer.render(scene, camera);
+            stats.end();
+            stats.update();
+            requestAnimationFrame(renderLoop);
+        }
+
+        function updateMenu() {
+
+        }
+
+
+        document.addEventListener("DOMContentLoaded", init);
+
+        window.addEventListener("resize", function() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+        
+        </script>
+       
+       <script type ='module'>
+           var Stats = function () {
+
+            var mode = 0;
+
+            var container = document.createElement( 'div' );
+            container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000';
+            container.addEventListener( 'click', function ( event ) {
+
+                event.preventDefault();
+                showPanel( ++ mode % container.children.length );
+
+            }, false );
+
+            //
+
+            function addPanel( panel ) {
+
+                container.appendChild( panel.dom );
+                return panel;
+
+            }
+
+            function showPanel( id ) {
+
+                for ( var i = 0; i < container.children.length; i ++ ) {
+
+                    container.children[ i ].style.display = i === id ? 'block' : 'none';
+
+                }
+
+                mode = id;
+
+            }
+
+            //
+
+            var beginTime = ( performance || Date ).now(), prevTime = beginTime, frames = 0;
+
+            var fpsPanel = addPanel( new Stats.Panel( 'FPS', '#0ff', '#002' ) );
+            var msPanel = addPanel( new Stats.Panel( 'MS', '#0f0', '#020' ) );
+
+            if ( self.performance && self.performance.memory ) {
+
+                var memPanel = addPanel( new Stats.Panel( 'MB', '#f08', '#201' ) );
+
+            }
+
+            showPanel( 0 );
+
+            return {
+
+                REVISION: 16,
+
+                dom: container,
+
+                addPanel: addPanel,
+                showPanel: showPanel,
+
+                begin: function () {
+
+                    beginTime = ( performance || Date ).now();
+
+                },
+
+                end: function () {
+
+                    frames ++;
+
+                    var time = ( performance || Date ).now();
+
+                    msPanel.update( time - beginTime, 200 );
+
+                    if ( time >= prevTime + 1000 ) {
+
+                        fpsPanel.update( ( frames * 1000 ) / ( time - prevTime ), 100 );
+
+                        prevTime = time;
+                        frames = 0;
+
+                        if ( memPanel ) {
+
+                            var memory = performance.memory;
+                            memPanel.update( memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576 );
+
+                        }
+
+                    }
+
+                    return time;
+
+                },
+
+                update: function () {
+
+                    beginTime = this.end();
+
+                },
+
+                // Backwards Compatibility
+
+                domElement: container,
+                setMode: showPanel
+
+            };
+
+            };
+
+            Stats.Panel = function ( name, fg, bg ) {
+
+            var min = Infinity, max = 0, round = Math.round;
+            var PR = round( window.devicePixelRatio || 1 );
+
+            var WIDTH = 80 * PR, HEIGHT = 48 * PR,
+                TEXT_X = 3 * PR, TEXT_Y = 2 * PR,
+                GRAPH_X = 3 * PR, GRAPH_Y = 15 * PR,
+                GRAPH_WIDTH = 74 * PR, GRAPH_HEIGHT = 30 * PR;
+
+            var canvas = document.createElement( 'canvas' );
+            canvas.width = WIDTH;
+            canvas.height = HEIGHT;
+            canvas.style.cssText = 'width:80px;height:48px';
+
+            var context = canvas.getContext( '2d' );
+            context.font = 'bold ' + ( 9 * PR ) + 'px Helvetica,Arial,sans-serif';
+            context.textBaseline = 'top';
+
+            context.fillStyle = bg;
+            context.fillRect( 0, 0, WIDTH, HEIGHT );
+
+            context.fillStyle = fg;
+            context.fillText( name, TEXT_X, TEXT_Y );
+            context.fillRect( GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT );
+
+            context.fillStyle = bg;
+            context.globalAlpha = 0.9;
+            context.fillRect( GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT );
+
+            return {
+
+                dom: canvas,
+
+                update: function ( value, maxValue ) {
+
+                    min = Math.min( min, value );
+                    max = Math.max( max, value );
+
+                    context.fillStyle = bg;
+                    context.globalAlpha = 1;
+                    context.fillRect( 0, 0, WIDTH, GRAPH_Y );
+                    context.fillStyle = fg;
+                    context.fillText( round( value ) + ' ' + name + ' (' + round( min ) + '-' + round( max ) + ')', TEXT_X, TEXT_Y );
+
+                    context.drawImage( canvas, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT );
+
+                    context.fillRect( GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT );
+
+                    context.fillStyle = bg;
+                    context.globalAlpha = 0.9;
+                    context.fillRect( GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round( ( 1 - ( value / maxValue ) ) * GRAPH_HEIGHT ) );
+
+                }
+
+            };
+
+            };
+
+            export default Stats;
+
+
+       </script>
+</body>
+</html>
