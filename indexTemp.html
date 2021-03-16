@@ -444,12 +444,30 @@
                     current_mesh.material.wireframe = false;
                 }
             }};
+
+    
+
             let colores_fondo = generalMenu.add(model, "color_fondo", model.colores_fondo).name('Color fondo').onChange(function(item){
                 console.log(model.color_fondo.toLowerCase());
                 renderer.setClearColor(new THREE.Color(model.color_fondo.toLowerCase()));
             });
             let see_wireframes_true = generalMenu.add(wireframe_true, "WireframesTrue");
             let see_wireframes_false = generalMenu.add(wireframe_false, "WireframesFalse");
+
+
+            // Opciones miscelaneas
+            let randomMenu = gui.addFolder("Otro");
+
+            var stats_true = {ShowStats:function(){
+                stats.dom.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000';
+            }};
+
+            var stats_false = {HideStats:function(){
+                stats.dom.style.cssText = 'position:fixed;top:-100;left:0;cursor:pointer;opacity:0.9;z-index:10000';
+            }};
+
+            let see_stats = randomMenu.add(stats_true, "ShowStats");
+            let see_stats_false = randomMenu.add(stats_false,"HideStats");
 
             //Esto controla la selección con un click
             var intersects = [];
@@ -522,7 +540,6 @@
 
             }, false );
 
-            //
 
             function addPanel( panel ) {
 
@@ -549,6 +566,7 @@
 
             var fpsPanel = addPanel( new Stats.Panel( 'FPS', '#0ff', '#002' ) );
             var msPanel = addPanel( new Stats.Panel( 'MS', '#0f0', '#020' ) );
+            //var emptyPanel = addPanel( new Stats.Panel('', '', '' ));
 
             if ( self.performance && self.performance.memory ) {
 
