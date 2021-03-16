@@ -9,11 +9,13 @@
 
 <body>
     
-    <script>
-        import * as THREE from 'https://unpkg.com/three/build/three.module.js';
-        import { OrbitControls } from 'https://unpkg.com/three/examples/jsm/controls/OrbitControls.js';
-        import Stats from "https://unpkg.com/three/examples/jsm/libs/stats.module.js";
-        import dat from "https://unpkg.com/three/examples/jsm/libs/dat.gui.module.js";
+    <script type ='module'>
+        import * as THREE from 'https://unpkg.com/three@0.124.0/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three@0.124.0/examples/jsm/controls/OrbitControls.js';
+        import Stats from "https://unpkg.com/three@0.124.0/examples/jsm/libs/stats.module.js";
+        import dat from "https://unpkg.com/three@0.124.0/examples/jsm/libs/dat.gui.module.js";
+        
+        let renderer, scene, camera, cameraControls, mesh, stats, meshArr, selected;
 
         function init() {
             // RENDERER ENGINE
@@ -31,21 +33,282 @@
             let near = 0.1;
             let far = 10000;
             camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-            camera.position.set(0, 0, 3);
+            camera.position.set(0, 0, 10);
             cameraControls = new OrbitControls(camera, renderer.domElement);
 
+            // Geometrias
+            let piramide = new THREE.Geometry();
+            piramide.vertices.push( new THREE.Vector3(0,0,0));
+            piramide.vertices.push( new THREE.Vector3(3,0,0));
+            piramide.vertices.push( new THREE.Vector3(0,0,3));
+            piramide.vertices.push( new THREE.Vector3(3,0,3));
+            piramide.vertices.push( new THREE.Vector3(1.5,3,1.5));
+            piramide.faces.push( new THREE.Face3(1,0,4));
+            piramide.faces.push( new THREE.Face3(0,2,4));
+            piramide.faces.push( new THREE.Face3(3,1,4));
+            piramide.faces.push( new THREE.Face3(2,3,4));
+            piramide.faces.push( new THREE.Face3(0,1,2));
+            piramide.faces.push( new THREE.Face3(3,2,1));
+
+            let piramide_triangulo = new THREE.Geometry();
+            piramide_triangulo.vertices.push( new THREE.Vector3(0,0,0));
+            piramide_triangulo.vertices.push( new THREE.Vector3(3,0,0));
+            piramide_triangulo.vertices.push( new THREE.Vector3(1.5,0,3));
+            piramide_triangulo.vertices.push( new THREE.Vector3(1.5,3,1.5));
+
+            piramide_triangulo.faces.push( new THREE.Face3(1,0,3));
+            piramide_triangulo.faces.push( new THREE.Face3(0,2,3));
+            piramide_triangulo.faces.push( new THREE.Face3(2,1,3));
+            piramide_triangulo.faces.push( new THREE.Face3(0,1,2));
+            
+            let cono_doble = new THREE.Geometry();
+            cono_doble.vertices.push( new THREE.Vector3(0,0,0));
+            cono_doble.vertices.push( new THREE.Vector3(3,0,0));
+            cono_doble.vertices.push( new THREE.Vector3(0,0,3));
+            cono_doble.vertices.push( new THREE.Vector3(3,0,3));
+            cono_doble.vertices.push( new THREE.Vector3(1.5,3,1.5));
+            cono_doble.vertices.push( new THREE.Vector3(1.5,-3,1.5));
+
+            cono_doble.faces.push( new THREE.Face3(1,0,4));
+            cono_doble.faces.push( new THREE.Face3(0,1,5));
+            cono_doble.faces.push( new THREE.Face3(0,2,4));
+            cono_doble.faces.push( new THREE.Face3(2,0,5));
+            cono_doble.faces.push( new THREE.Face3(2,3,4));
+            cono_doble.faces.push( new THREE.Face3(3,2,5));
+            cono_doble.faces.push( new THREE.Face3(3,1,4));
+            cono_doble.faces.push( new THREE.Face3(1,3,5));
+
+            let doble_cono_invertido = new THREE.Geometry();
+            doble_cono_invertido.vertices.push( new THREE.Vector3(1.5,1.5,1.5));
+            doble_cono_invertido.vertices.push( new THREE.Vector3(0,3,0));
+            doble_cono_invertido.vertices.push( new THREE.Vector3(3,3,0));
+            doble_cono_invertido.vertices.push( new THREE.Vector3(0,3,3));
+            doble_cono_invertido.vertices.push( new THREE.Vector3(3,3,3));
+
+            doble_cono_invertido.vertices.push( new THREE.Vector3(0,-3,0));
+            doble_cono_invertido.vertices.push( new THREE.Vector3(3,-3,0));
+            doble_cono_invertido.vertices.push( new THREE.Vector3(0,-3,3));
+            doble_cono_invertido.vertices.push( new THREE.Vector3(3,-3,3));
+
+            doble_cono_invertido.faces.push( new THREE.Face3(0,1,2));
+            doble_cono_invertido.faces.push( new THREE.Face3(1,0,3));
+            doble_cono_invertido.faces.push( new THREE.Face3(3,0,4));
+            doble_cono_invertido.faces.push( new THREE.Face3(2,4,0));
+            doble_cono_invertido.faces.push( new THREE.Face3(5,0,6));
+            doble_cono_invertido.faces.push( new THREE.Face3(0,5,7));
+            doble_cono_invertido.faces.push( new THREE.Face3(6,0,8));
+            doble_cono_invertido.faces.push( new THREE.Face3(0,7,8));
+
+            doble_cono_invertido.faces.push( new THREE.Face3(1,3,4));
+            doble_cono_invertido.faces.push( new THREE.Face3(2,1,4));
+            doble_cono_invertido.faces.push( new THREE.Face3(7,5,8));
+            doble_cono_invertido.faces.push( new THREE.Face3(5,6,8));
+
+            let caja = new THREE.Geometry();
+	        caja.vertices.push(new THREE.Vector3(-1, -1,  1));
+    	    caja.vertices.push(new THREE.Vector3(1, -1,  1));
+            caja.vertices.push(new THREE.Vector3(-1, 1,  1));
+            caja.vertices.push(new THREE.Vector3(1, 1, 1));	  
+    	    caja.vertices.push(new THREE.Vector3(-1, -1, -1));
+            caja.vertices.push(new THREE.Vector3(1, -1, -1));
+	        caja.vertices.push(new THREE.Vector3(-1, 1, -1));
+	        caja.vertices.push(new THREE.Vector3(1, 1,  -1));
+
+            caja.faces.push(
+        
+                new THREE.Face3(0, 3, 2),
+                new THREE.Face3(0, 1, 3),
+        
+                new THREE.Face3(1, 7, 3),
+                new THREE.Face3(1, 5, 7),
+        
+                new THREE.Face3(5, 6, 7),
+                new THREE.Face3(5, 4, 6),
+        
+                new THREE.Face3(4, 2, 6),
+                new THREE.Face3(4, 0, 2),
+        
+                new THREE.Face3(2, 7, 6),
+                new THREE.Face3(2, 3, 7),
+        
+                new THREE.Face3(4, 1, 0),
+                new THREE.Face3(4, 5, 1),
+            );
+
+            let casa = new THREE.Geometry();
+            casa.vertices.push( new THREE.Vector3(0,0,0));
+            casa.vertices.push( new THREE.Vector3(3,0,0));
+            casa.vertices.push( new THREE.Vector3(0,0,3));
+            casa.vertices.push( new THREE.Vector3(3,0,3));
+            casa.vertices.push( new THREE.Vector3(1.5,1.5,1.5));
+            casa.vertices.push( new THREE.Vector3(0,-3,0));
+            casa.vertices.push( new THREE.Vector3(3,-3,0));
+            casa.vertices.push( new THREE.Vector3(0,-3,3));
+            casa.vertices.push( new THREE.Vector3(3,-3,3));
+
+            casa.faces.push( new THREE.Face3(1,0,4));
+            casa.faces.push( new THREE.Face3(0,2,4));
+            casa.faces.push( new THREE.Face3(3,1,4));
+            casa.faces.push( new THREE.Face3(2,3,4));
+    
+            casa.faces.push( new THREE.Face3(5,2,0));
+            casa.faces.push( new THREE.Face3(7,2,5));
+            
+            casa.faces.push( new THREE.Face3(0,1,5));
+            casa.faces.push( new THREE.Face3(5,1,6));
+            
+            casa.faces.push( new THREE.Face3(1,3,6));
+            casa.faces.push( new THREE.Face3(6,3,8));
+    
+            casa.faces.push( new THREE.Face3(7,3,2));
+            casa.faces.push( new THREE.Face3(8,3,7));
+
+            casa.faces.push( new THREE.Face3(6,7,5));
+            casa.faces.push( new THREE.Face3(8,7,6));
+            
+            let trapecio = new THREE.Geometry();
+	        trapecio.vertices.push(new THREE.Vector3(-1,-1,1)); //0
+    	    trapecio.vertices.push(new THREE.Vector3(3,-3,1));  
+            trapecio.vertices.push(new THREE.Vector3(-1,1, 1));
+            trapecio.vertices.push(new THREE.Vector3(3,3,1));	  
+    	    trapecio.vertices.push(new THREE.Vector3(-1,-1,-1));
+            trapecio.vertices.push(new THREE.Vector3(3,-3,-1));
+	        trapecio.vertices.push(new THREE.Vector3(-1,1,-1));
+	        trapecio.vertices.push(new THREE.Vector3(3,3,-1));
+
+            trapecio.faces.push(
+        
+                new THREE.Face3(0, 3, 2),
+                new THREE.Face3(0, 1, 3),
+        
+                new THREE.Face3(1, 7, 3),
+                new THREE.Face3(1, 5, 7),
+        
+                new THREE.Face3(5, 6, 7),
+                new THREE.Face3(5, 4, 6),
+        
+                new THREE.Face3(4, 2, 6),
+                new THREE.Face3(4, 0, 2),
+        
+                new THREE.Face3(2, 7, 6),
+                new THREE.Face3(2, 3, 7),
+        
+                new THREE.Face3(4, 1, 0),
+                new THREE.Face3(4, 5, 1),
+            );
+
+            let paralelepipedo_horizontal = new THREE.Geometry();
+	        paralelepipedo_horizontal.vertices.push(new THREE.Vector3(-1,-1,1)); 
+    	    paralelepipedo_horizontal.vertices.push(new THREE.Vector3(3,-1,1));  
+            paralelepipedo_horizontal.vertices.push(new THREE.Vector3(-1,1, 1));
+            paralelepipedo_horizontal.vertices.push(new THREE.Vector3(3,1,1));	  
+    	    paralelepipedo_horizontal.vertices.push(new THREE.Vector3(-1,-1,-1));
+            paralelepipedo_horizontal.vertices.push(new THREE.Vector3(3,-1,-1));
+	        paralelepipedo_horizontal.vertices.push(new THREE.Vector3(-1,1,-1));
+            paralelepipedo_horizontal.vertices.push(new THREE.Vector3(3,1,-1));
+
+            paralelepipedo_horizontal.faces.push(
+        
+                new THREE.Face3(0, 3, 2),
+                new THREE.Face3(0, 1, 3),
+        
+                new THREE.Face3(1, 7, 3),
+                new THREE.Face3(1, 5, 7),
+        
+                new THREE.Face3(5, 6, 7),
+                new THREE.Face3(5, 4, 6),
+        
+                new THREE.Face3(4, 2, 6),
+                new THREE.Face3(4, 0, 2),
+        
+                new THREE.Face3(2, 7, 6),
+                new THREE.Face3(2, 3, 7),
+        
+                new THREE.Face3(4, 1, 0),
+                new THREE.Face3(4, 5, 1),
+            );
+
+            let paralelepipedo_vertical = new THREE.Geometry();
+	        paralelepipedo_vertical.vertices.push(new THREE.Vector3(-1,-1,1)); 
+    	    paralelepipedo_vertical.vertices.push(new THREE.Vector3(1,-1,1));  
+            paralelepipedo_vertical.vertices.push(new THREE.Vector3(-1,3, 1));
+            paralelepipedo_vertical.vertices.push(new THREE.Vector3(1,3,1));	  
+    	    paralelepipedo_vertical.vertices.push(new THREE.Vector3(-1,-1,-1));
+            paralelepipedo_vertical.vertices.push(new THREE.Vector3(1,-1,-1));
+	        paralelepipedo_vertical.vertices.push(new THREE.Vector3(-1,3,-1));
+	        paralelepipedo_vertical.vertices.push(new THREE.Vector3(1,3,-1));
+
+            paralelepipedo_vertical.faces.push(
+        
+                new THREE.Face3(0, 3, 2),
+                new THREE.Face3(0, 1, 3),
+        
+                new THREE.Face3(1, 7, 3),
+                new THREE.Face3(1, 5, 7),
+        
+                new THREE.Face3(5, 6, 7),
+                new THREE.Face3(5, 4, 6),
+        
+                new THREE.Face3(4, 2, 6),
+                new THREE.Face3(4, 0, 2),
+        
+                new THREE.Face3(2, 7, 6),
+                new THREE.Face3(2, 3, 7),
+        
+                new THREE.Face3(4, 1, 0),
+                new THREE.Face3(4, 5, 1),
+            );
+            
+            let punta = new THREE.Geometry();
+
+            punta.vertices.push(
+
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(2, 0, 0),
+                new THREE.Vector3(4, 1, 0),
+                new THREE.Vector3(0, 2, 0),
+
+                new THREE.Vector3(0, 0, -1),
+                new THREE.Vector3(2, 0, -1),
+                new THREE.Vector3(4, 1, -1),
+                new THREE.Vector3(0, 2, -1));
+
+
+            punta.faces.push(
+
+                new THREE.Face3(0, 1, 2),
+                new THREE.Face3(3, 0, 2),
+                new THREE.Face3(4, 5, 6),
+                new THREE.Face3(7, 4, 6),
+
+                new THREE.Face3(0, 4, 1),
+                new THREE.Face3(1, 4, 5),
+                new THREE.Face3(3, 7, 2),
+                new THREE.Face3(2, 7, 6));
+
+            let nombre_objeto = {
+                'Piramide base cuadrada': piramide,
+                'Piramide base triangular': piramide_triangulo,
+                'Piramide doble': cono_doble,
+                'Piramide doble invertida': doble_cono_invertido,
+                'Caja': caja,
+                'Casa': casa,
+                'Trapecio': trapecio,
+                'Paralelepipedo horizontal': paralelepipedo_horizontal,
+                'Paralelepipedo vertical': paralelepipedo_vertical,
+                'Punta': punta
+            }
             // Inicialización de un modelo predeterminado
-            var selected;
-            var meshArr = [];
-            let geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-                let material = new THREE.MeshBasicMaterial({color: "red", wireframe: false});
-                mesh = new THREE.Mesh(geometry, material);
-                mesh.name = "Cube";
-                scene.add(mesh);
-                meshArr.push(mesh);
-                selected= mesh;
+            meshArr = [];
+            let geometry = caja;
+            let material = new THREE.MeshBasicMaterial({color: "red", wireframe: false,transparent: true, opacity: 1});
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.name = "Cube";
+            scene.add(mesh);
+            meshArr.push(mesh);
+            selected= mesh;
 
-
+            
 
             let gui = new dat.GUI();
 
@@ -58,6 +321,7 @@
                 this.positionY = mesh.position.y;
                 this.positionZ = mesh.position.z;
                 this.wireframe = mesh.material.wireframe;
+                this.opacity = mesh.material.opacity;
             };
 
 
@@ -82,24 +346,110 @@
             gui.add(guiControls, "positionZ", -3, 3).listen().onChange(function(e) {
                 selected.position.z = e;
             });;
+            gui.add(guiControls, "opacity", 0, 1).listen().onChange(function(e) {
+                selected.material.opacity = e;
+            });;
             gui.add(guiControls, "wireframe").listen().onChange(function(e) {
                 selected.material.wireframe = e;
             });;
 
 
+            let model = {
+                listColors: ["White", "Red", "Yellow"],
+                figuras: ['Piramide base cuadrada', 'Piramide base triangular', 'Piramide doble', 'Piramide doble invertida', 'Caja', 'Casa', 'Trapecio', 'Paralelepipedo horizontal', 'paralelepipedo vertical', 'Punta'],
+                figuraDefault: "Caja",
+                defaultItem: "White",
+                name: "",
+                colores_fondo: ["Black","Grey","Blue","White","Red"],
+                color_fondo: "Black"
+            }
+            
+            let creation_selection = {
+                forma: "Caja",
+                color: "White",
+                nombre: "",
+                rotationX: 0,
+                rotationY: 0,
+                positionX: 0,
+                positionY: 0,
+                positionZ: 0
+            }
 
             //Con esto se crea un cubo
-            let creationMenu = gui.addFolder("Creation Menu");
+            let creationMenu = gui.addFolder("Agregar figura");
+            let forma_creacion = creationMenu.add(model, "figuraDefault", model.figuras).name('Modelos').onChange(function(item){
+                creation_selection.forma = model.figuraDefault;
+            });
+            let color_creacion = creationMenu.add(model, "defaultItem", model.listColors).name('Color').onChange(function(item){
+                creation_selection.color = model.defaultItem;
+            });
+            let nombre_creacion = creationMenu.add(model, "name").name("Model's Name").onChange(function(item) {}).onFinishChange(function(event) {
+                creation_selection.nombre = model.name;
+            });
+            let posicion_x = creationMenu.add(creation_selection, "positionX", -3, 3).listen().onChange(function(e) {
+            });;
+            let posicion_y = creationMenu.add(creation_selection, "positionY", -3, 3).listen().onChange(function(e) {
+            });;
+            let posicion_z = creationMenu.add(creation_selection, "positionZ", -3, 3).listen().onChange(function(e) {
+            });;
+            let rotation_x = creationMenu.add(creation_selection, "rotationX", -3, 3).listen().onChange(function(e) {
+            });;
+            let rotation_y = creationMenu.add(creation_selection, "rotationY", -3, 3).listen().onChange(function(e) {
+            });;
+            
             var obj = { add:function(){
-                let geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-                let material = new THREE.MeshBasicMaterial({color: "red", wireframe: false});
-                mesh = new THREE.Mesh(geometry, material);
-                mesh.name = "Cube";
+                let current_model = creation_selection.forma;
+                let current_color = creation_selection.color.toLowerCase();
+                let current_name = creation_selection.nombre;
+                let position_x = creation_selection.positionX;
+                let position_y = creation_selection.positionY;
+                let position_z = creation_selection.positionZ;
+                let rotation_x = creation_selection.rotationX;
+                let rotation_y = creation_selection.rotationY;
+
+                let newGeometry;
+
+                if( current_model != ''){
+                    newGeometry = nombre_objeto[current_model];
+                }else{
+                    alert('No se seleccionó un modelo');
+                    return;
+                }
+
+                let material = new THREE.MeshBasicMaterial({color: current_color, wireframe: false,transparent: true, opacity: 1});
+                mesh = new THREE.Mesh(newGeometry, material);
+                mesh.name = current_name;
+                mesh.position.x = position_x;
+                mesh.position.y = position_y;
+                mesh.position.z = position_z;
+                mesh.rotation.x = rotation_x;
+                mesh.rotation.y = rotation_y;
                 scene.add(mesh);
                 meshArr.push(mesh);
                 selected= mesh;
             }};
             let cubeCreation = creationMenu.add(obj, "add");
+
+            // Opciones generales
+            let generalMenu = gui.addFolder("Escena configuración");
+            var wireframe_true = { WireframesTrue:function(){
+                for ( var i = 0; i < meshArr.length; i ++ ) {
+                    let current_mesh = meshArr[i];
+                    current_mesh.material.wireframe = true;
+                }
+            }};
+            var wireframe_false = { WireframesFalse:function(){
+                for ( var i = 0; i < meshArr.length; i ++ ) {
+                    let current_mesh = meshArr[i];
+                    current_mesh.material.wireframe = false;
+                }
+            }};
+            let colores_fondo = generalMenu.add(model, "color_fondo", model.colores_fondo).name('Color fondo').onChange(function(item){
+                console.log(model.color_fondo.toLowerCase());
+                renderer.setClearColor(new THREE.Color(model.color_fondo.toLowerCase()));
+            });
+            let see_wireframes_true = generalMenu.add(wireframe_true, "WireframesTrue");
+            let see_wireframes_false = generalMenu.add(wireframe_false, "WireframesFalse");
 
             //Esto controla la selección con un click
             var intersects = [];
@@ -113,8 +463,14 @@
                 raycaster.setFromCamera(mouse, camera);
                 intersects = raycaster.intersectObjects(meshArr);
                 if (intersects.length > 0) {
-                selected = intersects[0].object;
-                guiControls.color = selected.material.color.getStyle();
+                    selected = intersects[0].object;
+                    guiControls.color = selected.material.color.getStyle();
+                    guiControls.rotationX = selected.rotation.x;
+                    guiControls.rotationY = selected.rotation.y;
+                    guiControls.positionX = selected.position.x;
+                    guiControls.positionY = selected.position.y;
+                    guiControls.positionZ = selected.position.z;
+                    guiControls.wireframe = selected.material.wireframe;
                 }
             }
 
@@ -141,7 +497,6 @@
         function updateMenu() {
 
         }
-
 
         document.addEventListener("DOMContentLoaded", init);
 
