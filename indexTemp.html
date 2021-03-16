@@ -36,6 +36,12 @@
             camera.position.set(0, 0, 10);
             cameraControls = new OrbitControls(camera, renderer.domElement);
 
+            // EL PISOOOOOO
+            let piso = new THREE.PlaneGeometry( 1000, 1000, 1, 1 );
+            let azulejo = new THREE.MeshBasicMaterial( { color: "white" } );
+            let floor = new THREE.Mesh(piso, azulejo );
+            floor.position.z= 0; 
+
             // Geometrias
             let piramide = new THREE.Geometry();
             piramide.vertices.push( new THREE.Vector3(0,0,0));
@@ -308,7 +314,6 @@
             meshArr.push(mesh);
             selected= mesh;
 
-            
 
             let gui = new dat.GUI();
 
@@ -466,8 +471,18 @@
                 stats.dom.style.cssText = 'position:fixed;top:-100;left:0;cursor:pointer;opacity:0.9;z-index:10000';
             }};
 
+            var floor_true = {ShowFloor:function(){
+                scene.add(floor);
+            }};
+
+            var floor_false = {HideFloor:function(){
+                scene.remove(floor);
+            }};
+
             let see_stats = randomMenu.add(stats_true, "ShowStats");
             let see_stats_false = randomMenu.add(stats_false,"HideStats");
+            let see_floor_true = randomMenu.add(floor_true,"ShowFloor");
+            let see_floor_false = randomMenu.add(floor_false,"HideFloor");
 
             //Esto controla la selección con un click
             var intersects = [];
