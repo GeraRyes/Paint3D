@@ -42,10 +42,10 @@
             cameraControls = new OrbitControls(camera, renderer.domElement);
 
             // EL PISOOOOOO
-            let piso = new THREE.PlaneGeometry( 1000, 1000, 1, 1 );
+            let piso = new THREE.PlaneGeometry( 1000, 1000 );
             let azulejo = new THREE.MeshBasicMaterial( { color: "white" } );
             let floor = new THREE.Mesh(piso, azulejo );
-            floor.position.z= 0; 
+            floor.rotation.x= 4.5; 
 
             // Geometrias
             let piramide = new THREE.Geometry();
